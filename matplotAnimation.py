@@ -4,6 +4,7 @@ Overview: Create an animation using matplot.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 plt.rcParams["figure.figsize"] = 4,3
 from matplotlib.animation import FuncAnimation
 
@@ -18,7 +19,8 @@ ax.axis([-1.5,1.5,-1.5,1.5])
 # set equal aspect such that the circle is not shown as ellipse
 ax.set_aspect("equal")
 # create a point in the axes
-point, = ax.plot(0,1, marker="o")
+
+point, = ax.plot(0,2, marker="o")
 
 # Updating function, to be repeatedly called by the animation
 def update(phi):
@@ -26,7 +28,9 @@ def update(phi):
     x,y = circle(phi)
     # set point's coordinates
     point.set_data([x],[y])
-    return point,
+    # colours = ['r','g','b']
+    # point.set_color(random.choice(colours))
+    return point
 
 # create animation with 10ms interval, which is repeated,
 # provide the full circle (0,2pi) as parameters
