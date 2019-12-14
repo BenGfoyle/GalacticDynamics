@@ -11,14 +11,29 @@ import matplotlib.pyplot as plt #make plots
 from tkinter import *
 
 fig = plt.figure()
+sin = np.sin; cos = np.cos;
 G = 1 #newtons gravitational Constant
 #===============================================================================
 def distance(pos1,pos2):
     """
     Overview: Calculate distance between two bodies given 2 lists of coordinates
     """
-    return (pos1 - pos2)**2
+    try:
+        coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
+        return np.sqrt(sum(coord))
+    except:
+        return (pos1 - pos2) ** 2
 #===============================================================================
+
+#===============================================================================
+def distanceCoord(pos1,pos2):
+    """
+    Overview: Calculate distance between two bodies given 2 lists of coordinates
+    """
+    coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
+    return coord
+#===============================================================================
+
 
 #===============================================================================
 def position(a,dt,cVel):
@@ -49,7 +64,7 @@ def force(mA,mB,d):
     """
     Overview: Calcualte the gravitational force of one body on another
     """
-    f = (-G * mA * mB) / (d ** 2)
+    return (G * mA * mB) / (d ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -74,11 +89,15 @@ def getTheta(z,r):
     """
     Overview: Return the altitude angle of the object
     """
-    return np.arccos(z / r)
+    print(z,  "/"  ,r)
+    try:
+        return np.arccos(z / r)
+    except:
+        return "Crash"
 #===============================================================================
 
 #===============================================================================
-def getPhi(x,y,z):
+def getPhi(x,y):
     """
     Overview: Return the azimuth angle of the object
     """
@@ -115,84 +134,76 @@ def simulation():
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
 
     for i in range(0,len(tRange)):
-        #change in x direction
-        d12x = distance(p1[i][0],p2[i][0])
-        d13x = distance(p1[i][0],p3[i][0])
-        d23x = distance(p2[i][0],p3[i][0])
+        print(i)
+        #Center of mass
+        comX = ((m1 * np.array(p1[i][0])) + (m2*np.array(p2[i][0]))) / (m1 + m2)
+        comY = ((m1 * np.array(p1[i][1])) + (m2*np.array(p2[i][1]))) / (m1 + m2)
+        comZ = ((m1 * np.array(p1[i][2])) + (m2*np.array(p2[i][2]))) / (m1 + m2)
+        com = [comX,comY,comZ]
 
-        f12x = force(m1,m2,d12x)
-        f13x = force(m1,m3,d13x)
-        f23x = force(m2,m3,d23x)
+        dCom = distanceCoord(com,p3[i])
+        d12 = distance(p1[i],p2[i])
+        d13 = distance(p1[i],p3[i])
+        d23 = distance(p2[i],p3[i])
 
-        a1x = acceleration((f13x + f12x),m1)
-        a2x = acceleration((f23x + f12x),m2)
-        a3x = acceleration((f13x + f23x),m3)
+        print(dCom)
 
-        v1x = velocity(v1[i - 1][0],a1x,tRange[i])
-        v2x = velocity(v2[i - 1][0],a2x,dt)
-        v3x = velocity(v3[i - 1][0],a3x,dt)
+        theta = getTheta(dCom[2], distance(com,p3[i]))
+        # theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
+        # theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
+        # theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
 
-        p1x = p1[i - 1][0] + position(a1x,dt,v1[i - 1][0])
-        p2x = p2[i - 1][0] + position(a2x,dt,v2[i - 1][0])
-        p3x = p3[i - 1][0] + position(a3x,dt,v3[i - 1][0])
+        if "Crash" == str(theta):
+            print("2 or more bodies have colided")
+            break
 
-        #change in y direction
-        d12y = distance(p1[i][1],p2[i][1])
-        d13y = distance(p1[i][1],p3[i][1])
-        d23y = distance(p2[i][1],p3[i][1])
+        phi = getPhi(dCom[0], dCom[1])
+        # phi13 =getTheta(distance(p1[i][0],p2[i][0]),distance(p1[i][1],p2[i][1]))
+        # phi23 =getTheta(distance(p2[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
+        # phi13 =getTheta(distance(p1[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
 
-        f12y = force(m1,m2,d12y)
-        f13y = force(m1,m3,d13y)
-        f23y = force(m2,m3,d23y)
+        f12,f13,f23 = force(m1,m2,d12),force(m1,m3,d13),force(m2,m3,d23)
 
-        a1y = acceleration((f13y + f12y),m1)
-        a2y = acceleration((f23y + f12y),m2)
-        a3y = acceleration((f13y + f23y),m3)
+        a1 = acceleration((f13 + f12),m1)
+        a2 = acceleration((f23 + f12),m2)
+        a3 = acceleration((f13 + f23),m3)
 
-        v1y = velocity(v1[i - 1][1],a1y,dt)
-        v2y = velocity(v2[i - 1][1],a2y,dt)
-        v3y = velocity(v3[i - 1][1],a3y,dt)
+        v1Temp = velocity(v1[i - 1],a1,dt)
+        v2Temp = velocity(v2[i - 1],a2,dt)
+        v3Temp = velocity(v3[i - 1],a3,dt)
 
-        p1y = p1[i - 1][1] + position(a1y,dt,v1[i - 1][1])
-        p2y = p2[i - 1][1] + position(a2y,dt,v2[i - 1][1])
-        p3y = p3[i - 1][1] + position(a3y,dt,v3[i - 1][1])
+        p1Temp = p1[i - 1] + position(a1,dt,v1[i - 1])
+        p2Temp = p2[i - 1] + position(a2,dt,v2[i - 1])
+        p3Temp = p3[i - 1] + position(a3,dt,v3[i - 1])
 
-        #change in z direction
-        d12z = distance(p1[i][2],p2[i][2])
-        d13z = distance(p1[i][2],p3[i][2])
-        d23z = distance(p2[i][2],p3[i][2])
-
-        f12z = force(m1,m2,d12z)
-        f13z = force(m1,m3,d13z)
-        f23z = force(m2,m3,d23z)
-
-        a1z = acceleration((f13z + f12z),m1)
-        a2z = acceleration((f23z + f12z),m2)
-        a3z = acceleration((f13z + f23z),m3)
-
-        v1z = velocity(v1[i - 1][2],a1z,dt)
-        v2z = velocity(v2[i - 1][2],a2z,dt)
-        v3z = velocity(v3[i - 1][2],a3z,dt)
-
-        p1z = p1[i - 1][2] + position(a1z,dt,v1[i - 1][2])
-        p2z = p2[i - 1][2] + position(a2z,dt,v2[i - 1][2])
-        p3z = p3[i - 1][2] + position(a3z,dt,v3[i - 1][2])
 
         #appeending values where appropriate
-        p1.append([p1x,p1y,p1z])
-        p2.append([p2x,p2y,p2z])
-        p3.append([p3x,p3y,p3z])
+        # p1.append(list(float(s) for s in p1Temp))
+        # p2.append(list(float(s) for s in p2Temp))
+        # p3.append(list(float(s) for s in p3Temp))
+        p1.append(list([p1Temp[0]*sin(theta)*cos(theta),p1Temp[0]*sin(theta)\
+                        *sin(phi),p1Temp[0]*cos(theta)]))
+        p2.append(list([p2Temp[0]*sin(theta)*cos(theta),p2Temp[0]*sin(theta)\
+                        *sin(phi),p2Temp[0]*cos(theta)]))
+        p3.append(list([p3Temp[0]*sin(theta)*cos(theta),p3Temp[0]*sin(theta)\
+                        *sin(phi),p3Temp[0]*cos(theta)]))
 
-        v1.append([v1x,v1y,v1z])
-        v2.append([v2x,v2y,v2z])
-        v3.append([v3x,v3y,v3z])
+        v1.append(list([v1Temp[0]*sin(theta)*cos(theta),v1Temp[0]*sin(theta)\
+                        *sin(phi),v1Temp[0]*cos(theta)]))
+        v2.append(list([v2Temp[0]*sin(theta)*cos(theta),v2Temp[0]*sin(theta)\
+                        *sin(phi),v2Temp[0]*cos(theta)]))
+        v3.append(list([v3Temp[0]*sin(theta)*cos(theta),v3Temp[0]*sin(theta)\
+                        *sin(phi),v3Temp[0]*cos(theta)]))
+        # vel1.append([v1x,v1y,v1z])
+        # vel2.append([v2x,v2y,v2z])
+        # vel3.append([v3x,v3y,v3z])
 
     p1x,p1y,p1z = [i[0] for i in p1],[i[1] for i in p1],[i[2] for i in p1]
     p2x,p2y,p2z = [i[0] for i in p2],[i[1] for i in p2],[i[2] for i in p2]
     p3x,p3y,p3z = [i[0] for i in p3],[i[1] for i in p3],[i[2] for i in p3]
 
-    makePlot(fig,p1x,p1y,p1z,"r")
-    makePlot(fig,p2x,p2y,p2z,"g")
+    # makePlot(fig,p1x,p1y,p1z,"r")
+    # makePlot(fig,p2x,p2y,p2z,"g")
     makePlot(fig,p3x,p3y,p3z,"b")
     plt.show()
 #===============================================================================
