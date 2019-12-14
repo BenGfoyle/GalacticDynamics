@@ -17,8 +17,7 @@ def distance(pos1,pos2):
     """
     Overview: Calculate distance between two bodies given 2 lists of coordinates
     """
-    coord = [(np.array(p1) - np.array(p2)) ** 2 for p1,p2 in zip(pos1, pos2)]
-    return np.sqrt(sum(coord))
+    return (pos1 - pos2)**2
 #===============================================================================
 
 #===============================================================================
@@ -26,7 +25,7 @@ def position(a,dt,cVel):
     """
     Overview: Calculate change in position of a body due to a change in time
     """
-    return [(v * dt) + (0.5 * a * (dt**2)) for v in cVel]
+    return (cVel * dt) + (0.5 * a * (dt**2))
 #===============================================================================
 
 #===============================================================================
@@ -42,7 +41,7 @@ def velocity(cVel, a, t):
     """
     Overview: Update velocity of a body based on current velocity
     """
-    return [v + (a * t) for v in cVel]
+    return cVel + (a * t)
 #===============================================================================
 
 #===============================================================================
@@ -50,7 +49,11 @@ def force(mA,mB,d):
     """
     Overview: Calcualte the gravitational force of one body on another
     """
-    return (G * mA * mB) / (d ** 2)
+    try:
+        f = (-G * mA * mB) / (d ** 2)
+    except:
+        f = 0
+    return f
 #===============================================================================
 
 #===============================================================================
@@ -62,6 +65,13 @@ def makePlot(fig,x,y,z,col):
     ax.scatter(x, y, z, c = col)
 #===============================================================================
 
+#===============================================================================
+def pythag(x,y,z):
+    """
+    Overview: Perform pythageras therom on 3 lists of coordinates
+    """
+    return np.sqrt(x ** 2 + y ** 2 + z ** 2)
+#===============================================================================
 
 #===============================================================================
 def simulation():
@@ -93,35 +103,100 @@ def simulation():
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
 
     for i in range(0,len(tRange)):
-        d13,d23,d12 = distance(p1[i],p3[i]),distance(p2[i],p3[i]),distance(p1[i],p3[i])
-        f13,f23,f12 = force(m1,m3,d13),force(m2,m3,d23),force(m1,m2,d12)
+        #change in x direction
+        d12x = distance(p1[i][0],p2[i][0])
+        d13x = distance(p1[i][0],p3[i][0])
+        d23x = distance(p2[i][0],p3[i][0])
 
-        a1 = acceleration((f13 + f12),m1)
-        a2 = acceleration((f12 + f23),m2)
-        a3 = acceleration((f13 + f23),m3)
+        f12x = force(m1,m2,d12x)
+        f13x = force(m1,m3,d13x)
+        f23x = force(m2,m3,d23x)
 
-        v1.append(velocity(v1[i - 1],a1, tRange[i]))
-        v2.append(velocity(v2[i - 1],a2, tRange[i]))
-        v3.append(velocity(v3[i - 1],a3, tRange[i]))
+        a1x = acceleration((f13x + f12x),m1)
+        a2x = acceleration((f23x + f12x),m2)
+        a3x = acceleration((f13x + f23x),m3)
 
-        p1.append(np.array(p1[i - 1]) + np.array(position(a1,dt,v1[i - 1])))
-        p2.append(np.array(p2[i - 1]) + np.array(position(a2,dt,v2[i - 1])))
-        p3.append(np.array(p3[i - 1]) + np.array(position(a3,dt,v3[i - 1])))
+        v1x = velocity(v1[i - 1][0],a1x,tRange[i])
+        v2x = velocity(v2[i - 1][0],a2x,dt)
+        v3x = velocity(v3[i - 1][0],a3x,dt)
+
+        p1x = p1[i - 1][0] + position(a1x,dt,v1[i - 1][0])
+        p2x = p2[i - 1][0] + position(a2x,dt,v2[i - 1][0])
+        p3x = p3[i - 1][0] + position(a3x,dt,v3[i - 1][0])
+
+        #change in y direction
+        d12y = distance(p1[i][1],p2[i][1])
+        d13y = distance(p1[i][1],p3[i][1])
+        d23y = distance(p2[i][1],p3[i][1])
+
+        f12y = force(m1,m2,d12y)
+        f13y = force(m1,m3,d13y)
+        f23y = force(m2,m3,d23y)
+
+        a1y = acceleration((f13y + f12y),m1)
+        a2y = acceleration((f23y + f12y),m2)
+        a3y = acceleration((f13y + f23y),m3)
+
+        v1y = velocity(v1[i - 1][1],a1y,dt)
+        v2y = velocity(v2[i - 1][1],a2y,dt)
+        v3y = velocity(v3[i - 1][1],a3y,dt)
+
+        p1y = p1[i - 1][1] + position(a1y,dt,v1[i - 1][1])
+        p2y = p2[i - 1][1] + position(a2y,dt,v2[i - 1][1])
+        p3y = p3[i - 1][1] + position(a3y,dt,v3[i - 1][1])
+
+        #change in z direction
+        d12z = distance(p1[i][2],p2[i][2])
+        d13z = distance(p1[i][2],p3[i][2])
+        d23z = distance(p2[i][2],p3[i][2])
+
+        f12z = force(m1,m2,d12z)
+        f13z = force(m1,m3,d13z)
+        f23z = force(m2,m3,d23z)
+
+        a1z = acceleration((f13z + f12z),m1)
+        a2z = acceleration((f23z + f12z),m2)
+        a3z = acceleration((f13z + f23z),m3)
+
+        v1z = velocity(v1[i - 1][2],a1z,dt)
+        v2z = velocity(v2[i - 1][2],a2z,dt)
+        v3z = velocity(v3[i - 1][2],a3z,dt)
+
+        p1z = p1[i - 1][2] + position(a1z,dt,v1[i - 1][2])
+        p2z = p2[i - 1][2] + position(a2z,dt,v2[i - 1][2])
+        p3z = p3[i - 1][2] + position(a3z,dt,v3[i - 1][2])
+
+        #appeending values where appropriate
+        p1.append([p1x,p1y,p1z])
+        p2.append([p2x,p2y,p2z])
+        p3.append([p3x,p3y,p3z])
+
+        v1.append([v1x,v1y,v1z])
+        v2.append([v2x,v2y,v2z])
+        v3.append([v3x,v3y,v3z])
 
     p1x,p1y,p1z = [i[0] for i in p1],[i[1] for i in p1],[i[2] for i in p1]
     p2x,p2y,p2z = [i[0] for i in p2],[i[1] for i in p2],[i[2] for i in p2]
     p3x,p3y,p3z = [i[0] for i in p3],[i[1] for i in p3],[i[2] for i in p3]
 
-    fig = plt.figure()
+    print(p3x)
+    print(p3y)
 
-    makePlot(fig,p1x,p1y,p1z,"r")
-    # makePlot(fig,p2x,p2y,p2z,"g")
-    # makePlot(fig,p3x,p3y,p3z,"b")
+    plt.scatter(p3x,p3y)
+    #fig = plt.figure()
+    #makePlot(fig,p1x,p1y,p1z,"r")
+    #makePlot(fig,p2x,p2y,p2z,"g")
+    #makePlot(fig,p3x,p3y,p3z,"b")
     plt.show()
 #===============================================================================
-
+#simulation()
+# ani = FuncAnimation(fig, simulation, interval=10, blit=True, repeat=True,
+#                     frames=np.linspace(0,2*np.pi,360, endpoint=False))
+# plt.show()
+#===============================================================================
 
 #===============================================================================
+
 """
 GUI
 """
