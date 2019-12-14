@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt #make plots
 from tkinter import *
 
-
+fig = plt.figure()
 G = 1 #newtons gravitational Constant
 #===============================================================================
 def distance(pos1,pos2):
@@ -49,11 +49,7 @@ def force(mA,mB,d):
     """
     Overview: Calcualte the gravitational force of one body on another
     """
-    try:
-        f = (-G * mA * mB) / (d ** 2)
-    except:
-        f = 0
-    return f
+    f = (-G * mA * mB) / (d ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -66,11 +62,27 @@ def makePlot(fig,x,y,z,col):
 #===============================================================================
 
 #===============================================================================
-def pythag(x,y,z):
+def getRad(x,y,z):
     """
     Overview: Perform pythageras therom on 3 lists of coordinates
     """
     return np.sqrt(x ** 2 + y ** 2 + z ** 2)
+#===============================================================================
+
+#===============================================================================
+def getTheta(z,r):
+    """
+    Overview: Return the altitude angle of the object
+    """
+    return np.arccos(z / r)
+#===============================================================================
+
+#===============================================================================
+def getPhi(x,y,z):
+    """
+    Overview: Return the azimuth angle of the object
+    """
+    return np.arctan2(y,x)
 #===============================================================================
 
 #===============================================================================
@@ -179,14 +191,9 @@ def simulation():
     p2x,p2y,p2z = [i[0] for i in p2],[i[1] for i in p2],[i[2] for i in p2]
     p3x,p3y,p3z = [i[0] for i in p3],[i[1] for i in p3],[i[2] for i in p3]
 
-    print(p3x)
-    print(p3y)
-
-    plt.scatter(p3x,p3y)
-    #fig = plt.figure()
-    #makePlot(fig,p1x,p1y,p1z,"r")
-    #makePlot(fig,p2x,p2y,p2z,"g")
-    #makePlot(fig,p3x,p3y,p3z,"b")
+    makePlot(fig,p1x,p1y,p1z,"r")
+    makePlot(fig,p2x,p2y,p2z,"g")
+    makePlot(fig,p3x,p3y,p3z,"b")
     plt.show()
 #===============================================================================
 #simulation()
