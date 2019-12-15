@@ -18,14 +18,8 @@ def distance(pos1,pos2):
     """
     Overview: Calculate distance between two bodies given 2 lists of coordinates
     """
-    print("***************************")
-    print(pos1,pos2)
     try:
-        coord = []
-        for i in range(0,len(pos1)):
-            coord.append((pos1[i] - pos2[i])**2)
-        #coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
-        print(coord)
+        coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
         return np.sqrt(sum(coord))
     except:
         return (pos1 - pos2) ** 2
@@ -40,12 +34,14 @@ def distanceCoord(pos1,pos2):
     return coord
 #===============================================================================
 
-
 #===============================================================================
 def position(a,dt,cVel):
     """
     Overview: Calculate change in position of a body due to a change in time
     """
+    print("cVel:",cVel)
+    print("dt:",dt)
+    print("a:",a)
     return (cVel * dt) + (0.5 * a * (dt**2))
 #===============================================================================
 
@@ -83,11 +79,11 @@ def makePlot(fig,x,y,z,col):
 #===============================================================================
 
 #===============================================================================
-def getRad(x,y,z):
+def getRad(r):
     """
     Overview: Perform pythageras therom on 3 lists of coordinates
     """
-    return np.sqrt(x ** 2 + y ** 2 + z ** 2)
+    return np.sqrt(r[0] ** 2 + r[1] ** 2 + r[2] ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -95,8 +91,8 @@ def getTheta(z,r):
     """
     Overview: Return the altitude angle of the object
     """
-    print(z,  "/"  ,r)
     try:
+        print(z, "/", r)
         return np.arccos(z / r)
     except:
         return "Crash"
@@ -140,6 +136,7 @@ def simulation():
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
 
     for i in range(0,len(tRange)):
+        print("\n*************")
         print(i)
         #Center of mass
         comX = ((m1 * np.array(p1[i][0])) + (m2*np.array(p2[i][0]))) / (m1 + m2)
@@ -151,8 +148,9 @@ def simulation():
         d12 = distance(p1[i],p2[i])
         d13 = distance(p1[i],p3[i])
         d23 = distance(p2[i],p3[i])
-        
-        theta = getTheta(dCom[2], distance(dCom,p3[i]))
+        dComp3 = distance(dCom,p3[i])
+        print("dComp3",dComp3)
+        theta = getTheta(dCom[2], dComp3)
         # theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
         # theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
         # theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
@@ -176,9 +174,9 @@ def simulation():
         v2Temp = velocity(v2[i - 1],a2,dt)
         v3Temp = velocity(v3[i - 1],a3,dt)
 
-        p1Temp = p1[i - 1] + position(a1,dt,v1[i - 1])
-        p2Temp = p2[i - 1] + position(a2,dt,v2[i - 1])
-        p3Temp = p3[i - 1] + position(a3,dt,v3[i - 1])
+        p1Temp = p1[i - 1] + position(a1,dt,getRad(v1[i - 1]))
+        p2Temp = p2[i - 1] + position(a2,dt,getRad(v2[i - 1]))
+        p3Temp = p3[i - 1] + position(a3,dt,getRad(v3[i - 1]))
 
 
         #appeending values where appropriate
