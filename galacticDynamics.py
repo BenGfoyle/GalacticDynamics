@@ -18,8 +18,14 @@ def distance(pos1,pos2):
     """
     Overview: Calculate distance between two bodies given 2 lists of coordinates
     """
+    print("***************************")
+    print(pos1,pos2)
     try:
-        coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
+        coord = []
+        for i in range(0,len(pos1)):
+            coord.append((pos1[i] - pos2[i])**2)
+        #coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
+        print(coord)
         return np.sqrt(sum(coord))
     except:
         return (pos1 - pos2) ** 2
@@ -115,20 +121,20 @@ def simulation():
     #v3 = velocity of star
 
     #lists of inital values
-    m1,m2,m3 = float(mass1.get()),float(mass2.get()),0.001
-    tRange = np.linspace(0,float(time.get()),float(steps.get()))
+    m1,m2,m3 = 1,1,1#float(mass1.get()),float(mass2.get()),0.001
+    tRange = np.linspace(0,100,10)#float(time.get()),float(steps.get()))
     dt = tRange[1] - tRange[0]
 
     #list of lists which will hold positional components of each body
     p1,p2,p3 = [],[],[]
-    initP1,initP2,initP3  = pos1.get(),pos2.get(),pos3.get()
+    initP1,initP2,initP3  = "(0,0,0)","(10,10,10)","(1,0,0)"#pos1.get(),pos2.get(),pos3.get()
     p1.append(list(float(s) for s in initP1.strip("()").split(",")))
     p2.append(list(float(s) for s in initP2.strip("()").split(",")))
     p3.append(list(float(s) for s in initP3.strip("()").split(",")))
 
     #list of lists which will hold positional components of each body
     v1,v2,v3 = [],[],[]
-    initV1,initV2,initV3  = vel1.get(),vel2.get(),vel3.get()
+    initV1,initV2,initV3  = "(0,0,0)","(0,0,0)","(0,1,0)"#vel1.get(),vel2.get(),vel3.get()
     v1.append(list(float(s) for s in initV1.strip("()").split(",")))
     v2.append(list(float(s) for s in initV2.strip("()").split(",")))
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
@@ -145,10 +151,8 @@ def simulation():
         d12 = distance(p1[i],p2[i])
         d13 = distance(p1[i],p3[i])
         d23 = distance(p2[i],p3[i])
-
-        print(dCom)
-
-        theta = getTheta(dCom[2], distance(com,p3[i]))
+        
+        theta = getTheta(dCom[2], distance(dCom,p3[i]))
         # theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
         # theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
         # theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
@@ -207,85 +211,85 @@ def simulation():
     makePlot(fig,p3x,p3y,p3z,"b")
     plt.show()
 #===============================================================================
-#simulation()
+simulation()
 # ani = FuncAnimation(fig, simulation, interval=10, blit=True, repeat=True,
 #                     frames=np.linspace(0,2*np.pi,360, endpoint=False))
 # plt.show()
 #===============================================================================
 
 #===============================================================================
-
-"""
-GUI
-"""
-#Define window, name, and parameters
-window = Tk()
-window.title("Galactic Dynamics")
-window.geometry('450x300')
-
-#Insert text with user input text field.
-lbl1 = Label(window, text = "Mass of Galaxy 1")
-lbl1.grid(column = 0, row = 1)
-
-mass1 = Entry(window, width = 20)
-mass1.grid(column = 1, row = 1)
-
-lbl2 = Label(window, text = "Mass of Galaxy 2 relative to Galaxy 1")
-lbl2.grid(column = 0, row = 2)
-
-mass2 = Entry(window, width = 10)
-mass2.grid(column = 1, row = 2)
-
-lbl3 = Label(window, text = "Galaxy 1 Position eg: x,y,z")
-lbl3.grid(column = 0, row = 3)
-
-pos1 = Entry(window, width = 20)
-pos1.grid(column = 1, row = 3)
-
-lbl4 = Label(window, text = "Galaxy 2 Position eg: x,y,z")
-lbl4.grid(column = 0, row = 4)
-
-pos2 = Entry(window, width = 20)
-pos2.grid(column = 1, row = 4)
-
-lbl5 = Label(window, text = "Star Position eg: x,y,z")
-lbl5.grid(column = 0, row = 5)
-
-pos3 = Entry(window, width = 20)
-pos3.grid(column = 1, row = 5)
-
-lbl6 = Label(window, text = "Galaxy 1 Velocity eg: x,y,z")
-lbl6.grid(column = 0, row = 6)
-
-vel1 = Entry(window, width = 20)
-vel1.grid(column = 1, row = 6)
-
-lbl7 = Label(window, text = "Galaxy 2 Velocity eg: x,y,z")
-lbl7.grid(column = 0, row = 7)
-
-vel2 = Entry(window, width = 20)
-vel2.grid(column = 1, row = 7)
-
-lbl8 = Label(window, text = "Star Velocity eg: x,y,z")
-lbl8.grid(column = 0, row = 8)
-
-vel3 = Entry(window, width = 20)
-vel3.grid(column = 1, row = 8)
-
-lbl9 = Label(window, text = "Total Time")
-lbl9.grid(column = 0, row = 9)
-
-time = Entry(window, width = 20)
-time.grid(column = 1, row = 9)
-
-lbl10 = Label(window, text = "Number of Time Steps")
-lbl10.grid(column = 0, row = 10)
-
-steps = Entry(window, width = 20)
-steps.grid(column = 1, row = 10)
-
-btn1 = Button(window, command = simulation, text = "Submit Values")
-btn1.grid(column = 0, row = 11)
-#loop until closed
-window.mainloop()
+#
+# """
+# GUI
+# """
+# #Define window, name, and parameters
+# window = Tk()
+# window.title("Galactic Dynamics")
+# window.geometry('450x300')
+#
+# #Insert text with user input text field.
+# lbl1 = Label(window, text = "Mass of Galaxy 1")
+# lbl1.grid(column = 0, row = 1)
+#
+# mass1 = Entry(window, width = 20)
+# mass1.grid(column = 1, row = 1)
+#
+# lbl2 = Label(window, text = "Mass of Galaxy 2 relative to Galaxy 1")
+# lbl2.grid(column = 0, row = 2)
+#
+# mass2 = Entry(window, width = 10)
+# mass2.grid(column = 1, row = 2)
+#
+# lbl3 = Label(window, text = "Galaxy 1 Position eg: x,y,z")
+# lbl3.grid(column = 0, row = 3)
+#
+# pos1 = Entry(window, width = 20)
+# pos1.grid(column = 1, row = 3)
+#
+# lbl4 = Label(window, text = "Galaxy 2 Position eg: x,y,z")
+# lbl4.grid(column = 0, row = 4)
+#
+# pos2 = Entry(window, width = 20)
+# pos2.grid(column = 1, row = 4)
+#
+# lbl5 = Label(window, text = "Star Position eg: x,y,z")
+# lbl5.grid(column = 0, row = 5)
+#
+# pos3 = Entry(window, width = 20)
+# pos3.grid(column = 1, row = 5)
+#
+# lbl6 = Label(window, text = "Galaxy 1 Velocity eg: x,y,z")
+# lbl6.grid(column = 0, row = 6)
+#
+# vel1 = Entry(window, width = 20)
+# vel1.grid(column = 1, row = 6)
+#
+# lbl7 = Label(window, text = "Galaxy 2 Velocity eg: x,y,z")
+# lbl7.grid(column = 0, row = 7)
+#
+# vel2 = Entry(window, width = 20)
+# vel2.grid(column = 1, row = 7)
+#
+# lbl8 = Label(window, text = "Star Velocity eg: x,y,z")
+# lbl8.grid(column = 0, row = 8)
+#
+# vel3 = Entry(window, width = 20)
+# vel3.grid(column = 1, row = 8)
+#
+# lbl9 = Label(window, text = "Total Time")
+# lbl9.grid(column = 0, row = 9)
+#
+# time = Entry(window, width = 20)
+# time.grid(column = 1, row = 9)
+#
+# lbl10 = Label(window, text = "Number of Time Steps")
+# lbl10.grid(column = 0, row = 10)
+#
+# steps = Entry(window, width = 20)
+# steps.grid(column = 1, row = 10)
+#
+# btn1 = Button(window, command = simulation, text = "Submit Values")
+# btn1.grid(column = 0, row = 11)
+# #loop until closed
+# window.mainloop()
 #===============================================================================
