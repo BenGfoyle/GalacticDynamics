@@ -22,7 +22,7 @@ def distance(pos1,pos2):
         coord = [(p1 - p2) ** 2 for p1,p2 in zip(pos1, pos2)]
         return np.sqrt(sum(coord))
     except:
-        return (pos1 - pos2) ** 2
+        return np.sqrt((pos1 - pos2) ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -39,9 +39,6 @@ def position(a,dt,cVel):
     """
     Overview: Calculate change in position of a body due to a change in time
     """
-    print("cVel:",cVel)
-    print("dt:",dt)
-    print("a:",a)
     return (cVel * dt) + (0.5 * a * (dt**2))
 #===============================================================================
 
@@ -66,7 +63,7 @@ def force(mA,mB,d):
     """
     Overview: Calcualte the gravitational force of one body on another
     """
-    return (G * mA * mB) / (d ** 2)
+    return -(G * mA * mB) / (d ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -92,7 +89,6 @@ def getTheta(z,r):
     Overview: Return the altitude angle of the object
     """
     try:
-        print(z, "/", r)
         return np.arccos(z / r)
     except:
         return "Crash"
@@ -111,32 +107,33 @@ def simulation():
     """
     Overview: Run a simulation of galactic dynamics for a given system
     """
+
     #variables follow their conventional meaning eg v = velocity f = force
     #variables will have a number following them to denote which body they
     #refer to v1 = velocity of galaxy 1, v2 = velocity of galaxy 2,
     #v3 = velocity of star
 
     #lists of inital values
-    m1,m2,m3 = 1,1,1#float(mass1.get()),float(mass2.get()),0.001
-    tRange = np.linspace(0,100,10)#float(time.get()),float(steps.get()))
+    m1,m2,m3 = 1,1e5,1e-5#float(mass1.get()),float(mass2.get()),0.001
+    tRange = np.linspace(0,1,20)#float(time.get()),float(steps.get()))
     dt = tRange[1] - tRange[0]
 
     #list of lists which will hold positional components of each body
     p1,p2,p3 = [],[],[]
-    initP1,initP2,initP3  = "(0,0,0)","(10,10,10)","(1,0,0)"#pos1.get(),pos2.get(),pos3.get()
+    initP1,initP2,initP3  = "(0,0,0)","(10,10,0)","(1,0,0)"#pos1.get(),pos2.get(),pos3.get()
     p1.append(list(float(s) for s in initP1.strip("()").split(",")))
     p2.append(list(float(s) for s in initP2.strip("()").split(",")))
     p3.append(list(float(s) for s in initP3.strip("()").split(",")))
 
     #list of lists which will hold positional components of each body
     v1,v2,v3 = [],[],[]
-    initV1,initV2,initV3  = "(0,0,0)","(0,0,0)","(0,1,0)"#vel1.get(),vel2.get(),vel3.get()
+    initV1,initV2,initV3  = "(0,0,0)","(0,0,0)","(0,0.001,0)"#vel1.get(),vel2.get(),vel3.get()
     v1.append(list(float(s) for s in initV1.strip("()").split(",")))
     v2.append(list(float(s) for s in initV2.strip("()").split(",")))
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
 
     for i in range(0,len(tRange)):
-        print("\n*************")
+        print("\n***********************")
         print(i)
         #Center of mass
         comX = ((m1 * np.array(p1[i][0])) + (m2*np.array(p2[i][0]))) / (m1 + m2)
@@ -149,20 +146,24 @@ def simulation():
         d13 = distance(p1[i],p3[i])
         d23 = distance(p2[i],p3[i])
         dComp3 = distance(dCom,p3[i])
-        print("dComp3",dComp3)
-        theta = getTheta(dCom[2], dComp3)
-        # theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
-        # theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
-        # theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
+
+        theta = getTheta(distance(dCom[2],p3[i][2]), distance(dCom,p3[i]))
+        print("Theta Params:",distance(dCom[2],p3[i][2]), distance(dCom,p3[i]))
+        print("Theta:",theta)
+        theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
+        theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
+        theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
 
         if "Crash" == str(theta):
             print("2 or more bodies have colided")
             break
 
-        phi = getPhi(dCom[0], dCom[1])
-        # phi13 =getTheta(distance(p1[i][0],p2[i][0]),distance(p1[i][1],p2[i][1]))
-        # phi23 =getTheta(distance(p2[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
-        # phi13 =getTheta(distance(p1[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
+        phi = getPhi(distance(dCom[0],p3[i][0]), distance(dCom[1],p3[i][1]))
+        print("Phi Params:",distance(dCom[0],p3[i][0]), distance(dCom[1],p3[i][1]))
+        print("Phi:",phi)
+        phi13 =getTheta(distance(p1[i][0],p2[i][0]),distance(p1[i][1],p2[i][1]))
+        phi23 =getTheta(distance(p2[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
+        phi13 =getTheta(distance(p1[i][0],p3[i][0]),distance(p1[i][1],p2[i][1]))
 
         f12,f13,f23 = force(m1,m2,d12),force(m1,m3,d13),force(m2,m3,d23)
 
@@ -183,6 +184,11 @@ def simulation():
         # p1.append(list(float(s) for s in p1Temp))
         # p2.append(list(float(s) for s in p2Temp))
         # p3.append(list(float(s) for s in p3Temp))
+        print("P1Temp:",p1Temp)
+        print("Sin(theta)", sin(theta))
+        print("Theta:",theta)
+        print("Cos(theta)", cos(theta))
+
         p1.append(list([p1Temp[0]*sin(theta)*cos(theta),p1Temp[0]*sin(theta)\
                         *sin(phi),p1Temp[0]*cos(theta)]))
         p2.append(list([p2Temp[0]*sin(theta)*cos(theta),p2Temp[0]*sin(theta)\
@@ -196,18 +202,23 @@ def simulation():
                         *sin(phi),v2Temp[0]*cos(theta)]))
         v3.append(list([v3Temp[0]*sin(theta)*cos(theta),v3Temp[0]*sin(theta)\
                         *sin(phi),v3Temp[0]*cos(theta)]))
+        print(p3)
         # vel1.append([v1x,v1y,v1z])
         # vel2.append([v2x,v2y,v2z])
         # vel3.append([v3x,v3y,v3z])
-
     p1x,p1y,p1z = [i[0] for i in p1],[i[1] for i in p1],[i[2] for i in p1]
     p2x,p2y,p2z = [i[0] for i in p2],[i[1] for i in p2],[i[2] for i in p2]
     p3x,p3y,p3z = [i[0] for i in p3],[i[1] for i in p3],[i[2] for i in p3]
 
+    v1x,v1y,v1z = [i[0] for i in v1],[i[1] for i in v1],[i[2] for i in v1]
+    v2x,v2y,v2z = [i[0] for i in v2],[i[1] for i in v2],[i[2] for i in v2]
+    v3x,v3y,v3z = [i[0] for i in v3],[i[1] for i in v3],[i[2] for i in v3]
+
+
     # makePlot(fig,p1x,p1y,p1z,"r")
     # makePlot(fig,p2x,p2y,p2z,"g")
-    makePlot(fig,p3x,p3y,p3z,"b")
-    plt.show()
+    #makePlot(fig,p3x,p3y,p3z,"b")
+    #plt.show()
 #===============================================================================
 simulation()
 # ani = FuncAnimation(fig, simulation, interval=10, blit=True, repeat=True,
