@@ -12,6 +12,7 @@ from tkinter import *
 
 fig = plt.figure()
 sin = np.sin; cos = np.cos;
+PI = np.pi
 G = 1 #newtons gravitational Constant
 #===============================================================================
 def distance(pos1,pos2):
@@ -63,7 +64,7 @@ def force(mA,mB,d):
     """
     Overview: Calcualte the gravitational force of one body on another
     """
-    return -(G * mA * mB) / (d ** 2)
+    return (G * mA * mB) / (d ** 2)
 #===============================================================================
 
 #===============================================================================
@@ -115,12 +116,12 @@ def simulation():
 
     #lists of inital values
     m1,m2,m3 = 1,1e6,1e-2#float(mass1.get()),float(mass2.get()),0.001
-    tRange = np.linspace(0,1000000,20)#float(time.get()),float(steps.get()))
+    tRange = np.linspace(0,5,200)#float(time.get()),float(steps.get()))
     dt = tRange[1] - tRange[0]
 
     #list of lists which will hold positional components of each body
     p1,p2,p3 = [],[],[]
-    initP1,initP2,initP3  = "(0,0,0)","(10,0,0)","(4,0,0)"#pos1.get(),pos2.get(),pos3.get()
+    initP1,initP2,initP3  = "(1,0,0)","(-1,0,0)","(4,0,0)"#pos1.get(),pos2.get(),pos3.get()
     p1.append(list(float(s) for s in initP1.strip("()").split(",")))
     p2.append(list(float(s) for s in initP2.strip("()").split(",")))
     p3.append(list(float(s) for s in initP3.strip("()").split(",")))
@@ -131,6 +132,8 @@ def simulation():
     v1.append(list(float(s) for s in initV1.strip("()").split(",")))
     v2.append(list(float(s) for s in initV2.strip("()").split(",")))
     v3.append(list(float(s) for s in initV3.strip("()").split(",")))
+
+    f1,f2,f3 = [],[],[]
 
     for i in range(0,len(tRange)):
         print("\n***********************")
@@ -151,8 +154,11 @@ def simulation():
         print("Theta Params:",distance(dCom[2],p3[i][2]), distance(dCom,p3[i]))
         print("Theta:",theta)
         theta12 = getTheta(distance(p1[i][2],p2[i][2]), d12)
+        theta21 = (2 * PI) - theta12
         theta23 = getTheta(distance(p2[i][2],p3[i][2]), d23)
+        theta32 = (2 * PI) - theta 23
         theta13 = getTheta(distance(p1[i][2],p3[i][2]), d13)
+        theta31 = (2 * PI) - theta13
 
         if "Crash" == str(theta):
             print("2 or more bodies have colided")
@@ -162,43 +168,53 @@ def simulation():
         print("Phi Params:",distance(dCom[0],p3[i][0]), distance(dCom[1],p3[i][1]))
         print("Phi:",phi)
         phi12 =getPhi(distance(p1[i][0],p2[i][0]),distance(p1[i][1],p2[i][1]))
-        phi23 =getPhi(distance(p2[i][0],p3[i][0]),distance(p2[i][1],p3[i][1]))
-        phi13 =getPhi(distance(p1[i][0],p3[i][0]),distance(p1[i][1],p3[i][1]))
+        phi21 = (2 * PI) - phi12
+        phi23 = getPhi(distance(p2[i][0],p3[i][0]),distance(p2[i][1],p3[i][1]))
+        phi32 = (2 * PI) - phi23
+        phi13 = getPhi(distance(p1[i][0],p3[i][0]),distance(p1[i][1],p3[i][1]))
+        phi31 = (2 * PI) - phi13
 
         f12,f13,f23 = force(m1,m2,d12),force(m1,m3,d13),force(m2,m3,d23)
+        f1Temp = [sin(theta) * cos(theta), sin(theta) * sin(phi), cos(theta)]
+        f1.append([f * (f13 + f12) for f in f1Temp])
+        # NOTE: Fic angles theta and phi for f2 f3
+        f2Temp = [sin(theta) * cos(theta), sin(theta) * sin(phi), cos(theta)]
+        f2.append([f * (f12 + f23) for f in f1Temp])
+        f3Temp = [sin(theta) * cos(theta), sin(theta) * sin(phi), cos(theta)]
+        f3.append([f * (f13 + f23) for f in f1Temp])
+
 
         a1 = acceleration((f13 + f12),m1)
         a2 = acceleration((f23 + f12),m2)
         a3 = acceleration((f13 + f23),m3)
 
-        v1Temp = velocity(v1[i - 1],a1,dt)
-        v2Temp = velocity(v2[i - 1],a2,dt)
+        # v1Temp = velocity(v1[i - 1],a1,dt)
+        # v2Temp = velocity(v2[i - 1],a2,dt)
         v3Temp = velocity(v3[i - 1],a3,dt)
 
-        p1Temp = p1[i - 1] + position(a1,dt,getRad(v1[i - 1]))
-        p2Temp = p2[i - 1] + position(a2,dt,getRad(v2[i - 1]))
+        # p1Temp = p1[i - 1] + position(a1,dt,getRad(v1[i - 1]))
+        # p2Temp = p2[i - 1] + position(a2,dt,getRad(v2[i - 1]))
         p3Temp = p3[i - 1] + position(a3,dt,getRad(v3[i - 1]))
 
-
-        #appeending values where appropriate
-        print("P1Temp:",p1Temp)
-        print("Sin(theta)", sin(theta))
-        print("Theta:",theta)
-        print("Cos(theta)", cos(theta))
-
-        p1.append(list([p1Temp[0]*sin(theta13)*cos(theta13),p1Temp[0]*\
-                        sin(theta13)*sin(phi13),p1Temp[0]*cos(theta13)]))
-        p2.append(list([p2Temp[0]*sin(theta23)*cos(theta23),p2Temp[0]*\
-                        sin(theta23)*sin(phi23),p2Temp[0]*cos(theta23)]))
-        p3.append(list([p3Temp[0]*sin(theta)*cos(theta),p3Temp[0]*sin(theta)\
-                        *sin(phi),p3Temp[0]*cos(theta)]))
-
-        v1.append(list([v1Temp[0]*sin(theta13)*cos(theta13),v1Temp[0]\
-                        *sin(theta13)*sin(phi13),v1Temp[0]*cos(theta13)]))
-        v2.append(list([v2Temp[0]*sin(theta23)*cos(theta23),v2Temp[0]\
-                        *sin(theta23)*sin(phi23),v2Temp[0]*cos(theta23)]))
+        # v1.append(list([v1Temp[0]*sin(theta13)*cos(theta13),v1Temp[0]\
+        #                 *sin(theta13)*sin(phi13),v1Temp[0]*cos(theta13)]))
+        # v2.append(list([v2Temp[0]*sin(theta23)*cos(theta23),v2Temp[0]\
+        #                 *sin(theta23)*sin(phi23),v2Temp[0]*cos(theta23)]))
         v3.append(list([v3Temp[0]*sin(theta)*cos(theta),v3Temp[0]\
                         *sin(theta)*sin(phi),v3Temp[0]*cos(theta)]))
+
+        p1.append(list([position(0,tRange[i],v1[0][0]),position(0,v1[0][1],\
+                            v1[0][1]),position(0,tRange[i],v1[0][2])]))
+        p2.append(list([position(0,tRange[i],v2[0][0]),position(0,tRange[i],\
+                            v2[0][1]),position(0,tRange[i],v2[0][2])]))
+        p3.append(list([p3Temp[0]*sin(theta)*cos(theta),p3Temp[0]*\
+                        sin(theta)*sin(phi),p3Temp[0]*cos(phi)]))
+        # p2.append(list([p2Temp[0]*sin(theta23)*cos(theta23),p2Temp[0]*\
+        #                 sin(theta23)*sin(phi23),p2Temp[0]*cos(theta23)]))
+        # p3.append(list([p3Temp[0]*sin(theta)*cos(theta),p3Temp[0]*sin(theta)\
+        #                 *sin(phi),p3Temp[0]*cos(theta)]))
+
+
 
     p1x,p1y,p1z = [i[0] for i in p1],[i[1] for i in p1],[i[2] for i in p1]
     p2x,p2y,p2z = [i[0] for i in p2],[i[1] for i in p2],[i[2] for i in p2]
@@ -212,7 +228,7 @@ def simulation():
 
     ax = fig.add_subplot(111, projection='3d')
     makePlot(ax,p1x,p1y,p1z,"r")
-    # makePlot(ax,p2x,p2y,p2z,"g")
+    makePlot(ax,p2x,p2y,p2z,"g")
     makePlot(ax,p3x,p3y,p3z,"b")
     plt.show()
 #===============================================================================
